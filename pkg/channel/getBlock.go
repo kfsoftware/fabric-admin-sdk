@@ -20,6 +20,45 @@ var newest = &ab.SeekPosition{
 	},
 }
 
+var oldest = &ab.SeekPosition{
+	Type: &ab.SeekPosition_Oldest{
+		Oldest: &ab.SeekOldest{},
+	},
+}
+
+// GetGenesisBlock retrieves the genesis block (block 0) from the specified channel
+// using the provided connection, identity, and TLS certificate.
+func GetGenesisBlock(ctx context.Context, connection grpc.ClientConnInterface, id identity.SigningIdentity, channelID string, certificate tls.Certificate) (*cb.Block, error) {
+	abClient := ab.NewAtomicBroadcastClient(connection)
+	deliverClient, err := abClient.Deliver(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create deliver client: %w", err)
+	}
+
+	// Genesis block is always at position 0
+	seekPosition := &ab.SeekPosition{
+		Type: &ab.SeekPosition_Specified{
+			Specified: &ab.SeekSpecified{
+				Number: 0,
+			},
+		},
+	}
+
+	return getBlockBySeekPosition(deliverClient, channelID, certificate, id, true, seekPosition)
+}
+
+// GetOldestBlock retrieves the oldest available block from the specified channel
+// using the provided connection, identity, and TLS certificate.
+func GetOldestBlock(ctx context.Context, connection grpc.ClientConnInterface, id identity.SigningIdentity, channelID string, certificate tls.Certificate) (*cb.Block, error) {
+	abClient := ab.NewAtomicBroadcastClient(connection)
+	deliverClient, err := abClient.Deliver(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create deliver client: %w", err)
+	}
+
+	return getBlockBySeekPosition(deliverClient, channelID, certificate, id, true, oldest)
+}
+
 func GetConfigBlockFromOrderer(ctx context.Context, connection grpc.ClientConnInterface, id identity.SigningIdentity, channelID string, certificate tls.Certificate) (*cb.Block, error) {
 	abClient := ab.NewAtomicBroadcastClient(connection)
 	deliverClient, err := abClient.Deliver(ctx)
