@@ -86,7 +86,7 @@ func (g *Gateway) Approve(ctx context.Context, chaincodeDef *Definition) error {
 		)
 	})
 	if err != nil {
-		return fmt.Errorf("failed to approve chaincode: %w", err)
+		return err
 	}
 
 	return nil
@@ -184,7 +184,7 @@ func (g *Gateway) Commit(ctx context.Context, chaincodeDef *Definition) error {
 		)
 	})
 	if err != nil {
-		return fmt.Errorf("failed to commit chaincode: %w", err)
+		return err
 	}
 
 	return nil
